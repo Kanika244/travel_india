@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate HTML
+        run: |
+          npm install -g htmlhint
+          htmlhint index.html gallery.html
+
+      - name: Lint CSS
+        run: |
+          npm install -g stylelint stylelint-config-standard
+          echo '{ "extends": "stylelint-config-standard" }' > .stylelintrc.json
+          stylelint "css/**/*.css" --allow-empty-input
+
+      - name: Lint JavaScript
+        run: |
+          npm install -g eslint
+          eslint scripts/**/*.js --no-eslintrc --env browser,es2021 --parser-options=ecmaVersion:2021 || true
